@@ -9,7 +9,6 @@ EXPR=/usr/bin/expr
 # set nc port static for firewall issues
 IDPL_NC_PORT=10000
 
-
 get_job_attr_blocking() {
     #echo "Waiting for attribute $1" 1>&2
     while /bin/true
@@ -90,7 +89,11 @@ receive_server() {
     fi;
 
     echo "$EXPECTED_CHECKSUM==$CHECKSUM";
-
+    
+    #Add by Jarvis
+    TIME_START=`get_job_attr_blocking ResultTimeStart`
+    TIME_END=`get_job_attr_blocking ResultTimeEnd`
+    
     $CONDOR_CHIRP set_job_attr ResultFileReceived TRUE
 
     return 0
@@ -186,4 +189,7 @@ if [[ $_CONDOR_PROCNO = "0" ]]; then
 elif [[ $_CONDOR_PROCNO = "1" ]]; then
     echo "Telling partner I'm done"
     $CONDOR_CHIRP set_job_attr Node1Done TRUE
+    # Add by Jarvis
+    #./mysql_save.sh $SENDER $RECEIVER $TIME_START $TIME_END $EXPECTED_CHECKSUM $CHECKSUM
+    ./post_transfer_time.sh $SENDER $RECEIVER $TIME_START $TIME_END $EXPECTED_CHECKSUM $CHECKSUM USERNAME=idpl PASSWORD=idpl HOSTNAME=localhost:80
 fi
